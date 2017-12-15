@@ -18,8 +18,8 @@ font-family: Helvetica
 library(ComplexHeatmap)
 library(RColorBrewer)
 library(circlize)
+library(dendextend)
 library(genefilter)
-library(DESeq)
 ```
 
 
@@ -61,7 +61,8 @@ heatmap_legend_param = list(legend_direction = "horizontal",
                             legend_width = unit(3,"cm"),
                             title_position = "lefttop")
 
-myHeatmap <- function(mat, column_title, name, split, col){
+
+myHeatmap <- function(mat, column_title, name, split, col, clustering_method_rows = "complete"){
     Heatmap(mat, 
             col = col,
             column_title = column_title,
@@ -70,6 +71,7 @@ myHeatmap <- function(mat, column_title, name, split, col){
             show_row_names = FALSE, 
             cluster_columns = FALSE,
             cluster_rows = TRUE,
+            clustering_method_rows = clustering_method_rows,
             split = my_split, gap = unit(2.5, "mm"),
             top_annotation = top_annotation,
             heatmap_legend_param = heatmap_legend_param
@@ -116,10 +118,6 @@ for(my_brewer in my_brewers){
     image(t(matrix(1:9)), col=brewer.pal(9,my_brewer), main = my_brewer, cex.main=2)
     text(0, seq(0,1,length.out = 9), labels = brewer.pal(9,my_brewer))
 }
-
-
-
-
 ```
 
 ### Change colors
@@ -212,4 +210,76 @@ draw(ht_list,
      heatmap_legend_side = "bottom",
      padding = unit(c(0, 0, 0, 3), "cm"))
 ```
+
+
+# Clustering
+
+
+```{r, echo=FALSE, message=FALSE, fig.align='center', warning=FALSE}
+color_function1 <- function(mat){
+    x = as.vector(as.matrix(mat))
+    colfun <- colorRamp2(breaks = seq(0, 15, length = 9), 
+                         colors = brewer.pal(9,"Reds"))
+    return(colfun)
+}
+
+
+color_function2 <- function(mat){
+    x = as.vector(as.matrix(mat))
+    colfun <- colorRamp2(breaks = seq(-5, 5, length = 9), 
+                         colors = rev(brewer.pal(9,"RdYlBu")))
+    return(colfun)
+}
+
+color_function3 <- function(mat){
+    x = as.vector(as.matrix(mat))
+    colfun <- colorRamp2(breaks = seq(-2, 2, length = 9), 
+                         colors = rev(brewer.pal(9,"RdYlBu")))
+    return(colfun)
+}
+```
+
+### Complete
+
+```{r, message=FALSE, fig.align='center', warning=FALSE}
+
+ht1 <- myHeatmap(mat1, col =  color_function1(mat1), name = "(A)", column_title = "(A) Log2 Counts", 
+                 clustering_method_rows = "complete")
+ht2 <- myHeatmap(mat2, col =  color_function2(mat2), name = "(B)", column_title = "(B) Row Scaled")
+ht3 <- myHeatmap(mat3, col =  color_function3(mat3), name = "(C)", column_title = "(C) Row Z-Scores")
+
+ht_list = ht1 + ht2 + ht3
+
+draw(ht_list, heatmap_legend_side = "bottom",padding = unit(c(0, 0, 0, 3), "cm"))
+```
+
+### Average
+
+```{r, message=FALSE, fig.align='center', warning=FALSE}
+
+ht1 <- myHeatmap(mat1, col =  color_function1(mat1), name = "(A)", column_title = "(A) Log2 Counts", 
+                 clustering_method_rows = "average")
+ht2 <- myHeatmap(mat2, col =  color_function2(mat2), name = "(B)", column_title = "(B) Row Scaled")
+ht3 <- myHeatmap(mat3, col =  color_function3(mat3), name = "(C)", column_title = "(C) Row Z-Scores")
+
+ht_list = ht1 + ht2 + ht3
+
+draw(ht_list, heatmap_legend_side = "bottom",padding = unit(c(0, 0, 0, 3), "cm"))
+```
+
+
+### ward.D
+
+```{r, message=FALSE, fig.align='center', warning=FALSE}
+
+ht1 <- myHeatmap(mat1, col =  color_function1(mat1), name = "(A)", column_title = "(A) Log2 Counts", 
+                 clustering_method_rows = "ward.D")
+ht2 <- myHeatmap(mat2, col =  color_function2(mat2), name = "(B)", column_title = "(B) Row Scaled")
+ht3 <- myHeatmap(mat3, col =  color_function3(mat3), name = "(C)", column_title = "(C) Row Z-Scores")
+
+ht_list = ht1 + ht2 + ht3
+
+draw(ht_list, heatmap_legend_side = "bottom",padding = unit(c(0, 0, 0, 3), "cm"))
+```
+
 
